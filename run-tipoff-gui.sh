@@ -1,19 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-IMAGE="${IMAGE:-tipoff:latest}"
-mkdir -p "$HOME/.tipoff"
+IMAGE="${IMAGE:-tipoff/gui:dev}"
 
-# 호스트 X 서버에 "로컬 클라이언트" 접속 허용 (한 번만 필요, 실패해도 무시)
-xhost +local: >/dev/null 2>&1 || true
+# X 권한 (X11)
+command -v xhost >/dev/null 2>&1 && xhost +local: || true
 
-exec docker run --rm -it \
-  --name tipoff \
-  --network=host \
-  -e TZ="${TZ:-Asia/Seoul}" \
-  -e DISPLAY="${DISPLAY}" \
-  -e HEADLESS=false \
-  -v "$HOME/.tipoff:/home/appuser/.tipoff" \
-  -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
-  "$IMAGE" \
-  "$@"
+# 빌드
+docker build -t "$IMAGE" -f Dockerfile .
+
+# 실행
+docker run --rm -it \
+  --name tipoff_gui \
+  --net=host \
+  -e DISPLAY \
+  -e XDG_RUNTIME_DIR \
+  -e TZ="Asia/Seoul" \
+  -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+  -v "$HOME/.tipoff-docker":/home/appuser/.tipoff \
+  "$IMAGE"

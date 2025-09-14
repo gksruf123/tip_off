@@ -4,8 +4,10 @@ FROM python:3.11-slim
 # 필수 OS 패키지 (Tk, X11, 로케일 등)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     tk xauth x11-apps libx11-6 libxext6 libxrender1 libxft2 libxi6 \
+    fontconfig fonts-nanum \
     locales tzdata ca-certificates \
  && rm -rf /var/lib/apt/lists/*
+
 
 # 로케일
 RUN sed -i 's/# ko_KR.UTF-8/ko_KR.UTF-8/' /etc/locale.gen && locale-gen
